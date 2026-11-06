@@ -1,4 +1,5 @@
 <?php
+// agregado
 $servidor = "localhost";
 $usuario = "root";
 $password = "";
