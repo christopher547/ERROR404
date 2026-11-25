@@ -1,0 +1,452 @@
+inicio3.html.<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librería - Catálogo, Carrito y Pagos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f6fa;
+        }
+        .book-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        .book-cover {
+            height: 190px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #ffffff;
+            padding: 1rem;
+            text-align: center;
+            border-top-left-radius: var(--bs-card-inner-border-radius);
+            border-top-right-radius: var(--bs-card-inner-border-radius);
+        }
+        .price-tag {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">Librería Central</a>
+
+            <button class="btn btn-warning position-relative fw-semibold"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#carritoOffcanvas"
+                    aria-controls="carritoOffcanvas">
+                Carrito de compras
+                <span id="contadorCarrito"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    0
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Encabezado y filtros -->
+    <header class="bg-white border-bottom py-4 mb-4">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-md-5">
+                    <h1 class="h3 mb-1">Catálogo de Libros</h1>
+                    <p class="text-muted mb-0">Explora títulos, agrega al carrito y simula tu pago.</p>
+                </div>
+                <div class="col-md-4">
+                    <input type="search"
+                           id="buscadorLibros"
+                           class="form-control"
+                           placeholder="Buscar por título o autor...">
+                </div>
+                <div class="col-md-3">
+                    <select id="filtroCategoria" class="form-select">
+                        <option value="Todas" selected>Todas las categorías</option>
+                        <option value="Programación">Programación</option>
+                        <option value="Historia">Historia</option>
+                        <option value="Ciencia">Ciencia</option>
+                        <option value="Ficción">Ficción</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Catálogo de libros -->
+    <main class="container pb-5">
+        <div id="catalogoLibros" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4"></div>
+    </main>
+
+    <!-- Pestaña / Panel lateral del Carrito de Compras -->
+    <div class="offcanvas offcanvas-end"
+         tabindex="-1"
+         id="carritoOffcanvas"
+         aria-labelledby="carritoOffcanvasLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold" id="carritoOffcanvasLabel">Carrito de compras</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="offcanvas-body d-flex flex-column justify-content-between">
+            <div id="itemsCarrito" class="overflow-auto pe-1">
+                <!-- Se llena dinámicamente con JS -->
+            </div>
+
+            <div class="border-top pt-3 mt-3">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Subtotal</span>
+                    <span id="subtotalCarrito">$0.00</span>
+                </div>
+                <div class="d-flex justify-content-between small text-muted mb-2">
+                    <span>IVA (16%)</span>
+                    <span id="ivaCarrito">$0.00</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+                    <span>Total</span>
+                    <span id="totalCarrito">$0.00</span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button id="btnProcederPago"
+                            class="btn btn-success fw-semibold"
+                            data-bs-toggle="modal"
+                            data-bs-target="#pagoModal"
+                            disabled>
+                        Proceder al pago
+                    </button>
+                    <button id="btnVaciarCarrito"
+                            class="btn btn-outline-secondary btn-sm"
+                            type="button">
+                        Vaciar carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pagos -->
+    <div class="modal fade" id="pagoModal" tabindex="-1" aria-labelledby="pagoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="pagoModalLabel">Finalizar compra y pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <form id="formPago">
+                    <div class="modal-body">
+                        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-3">
+                            <span>Total a pagar:</span>
+                            <strong id="totalPagoModal" class="fs-5 text-success">$0.00</strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombreComprador" class="form-label">Nombre completo</label>
+                            <input type="text" class="form-control" id="nombreComprador" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="correoComprador" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="correoComprador" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="metodoPago" class="form-label">Método de pago</label>
+                            <select class="form-select" id="metodoPago" required>
+                                <option value="tarjeta" selected>Tarjeta de crédito / débito</option>
+                                <option value="transferencia">Transferencia bancaria</option>
+                                <option value="efectivo">Pago en caja / sucursal</option>
+                            </select>
+                        </div>
+
+                        <!-- Campos de tarjeta -->
+                        <div id="camposTarjeta">
+                            <div class="mb-3">
+                                <label for="numeroTarjeta" class="form-label">Número de tarjeta</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="numeroTarjeta"
+                                       maxlength="19"
+                                       placeholder="1234 5678 9012 3456">
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label for="vencimientoTarjeta" class="form-label">Vencimiento (MM/AA)</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="vencimientoTarjeta"
+                                           maxlength="5"
+                                           placeholder="08/28">
+                                </div>
+                                <div class="col-6">
+                                    <label for="cvvTarjeta" class="form-label">CVV</label>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="cvvTarjeta"
+                                           maxlength="4"
+                                           placeholder="123">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instrucción alternativa -->
+                        <div id="instruccionAlternativa" class="alert alert-info small d-none mt-3 mb-0">
+                            Al confirmar se generará tu referencia de pago para completar la orden.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary fw-semibold">Confirmar pago</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Compra -->
+    <div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-3">
+                <div class="modal-body">
+                    <h4 class="text-success fw-bold mb-2">¡Pago realizado con éxito!</h4>
+                    <p class="text-muted mb-3">Gracias por tu compra en Librería Central.</p>
+                    <p class="mb-1"><strong>Folio:</strong> <span id="folioOrden"></span></p>
+                    <p class="mb-3"><strong>Total pagado:</strong> <span id="montoPagado"></span></p>
+                    <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const libros = [
+            { id: 1, titulo: "Fundamentos de JavaScript", autor: "Elena Ríos", categoria: "Programación", precio: 420, color: "#1d4ed8" },
+            { id: 2, titulo: "Historia de México Moderno", autor: "Carlos Mendoza", categoria: "Historia", precio: 350, color: "#991b1b" },
+            { id: 3, titulo: "Física para Principiantes", autor: "Sofía Navarro", categoria: "Ciencia", precio: 490, color: "#065f46" },
+            { id: 4, titulo: "Crónicas del Horizonte", autor: "Mateo Valdés", categoria: "Ficción", precio: 290, color: "#6b21a8" },
+            { id: 5, titulo: "Estructuras de Datos en Práctica", autor: "Andrés Luna", categoria: "Programación", precio: 530, color: "#0f766e" },
+            { id: 6, titulo: "Ecología y Biodiversidad", autor: "Valeria Cruz", categoria: "Ciencia", precio: 380, color: "#3f6212" }
+        ];
+
+        let carrito = JSON.parse(localStorage.getItem("carritoLibreria") || "[]");
+
+        const catalogoEl = document.getElementById("catalogoLibros");
+        const buscadorEl = document.getElementById("buscadorLibros");
+        const filtroCategoriaEl = document.getElementById("filtroCategoria");
+        const itemsCarritoEl = document.getElementById("itemsCarrito");
+        const contadorCarritoEl = document.getElementById("contadorCarrito");
+        const subtotalEl = document.getElementById("subtotalCarrito");
+        const ivaEl = document.getElementById("ivaCarrito");
+        const totalEl = document.getElementById("totalCarrito");
+        const totalPagoModalEl = document.getElementById("totalPagoModal");
+        const btnProcederPago = document.getElementById("btnProcederPago");
+        const btnVaciarCarrito = document.getElementById("btnVaciarCarrito");
+
+        function formatoMoneda(cantidad) {
+            return cantidad.toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+        }
+
+        function guardarCarrito() {
+            localStorage.setItem("carritoLibreria", JSON.stringify(carrito));
+        }
+
+        function renderCatalogo() {
+            const texto = buscadorEl.value.trim().toLowerCase();
+            const categoria = filtroCategoriaEl.value;
+
+            const filtrados = libros.filter(libro => {
+                const coincideTexto =
+                    libro.titulo.toLowerCase().includes(texto) ||
+                    libro.autor.toLowerCase().includes(texto);
+                const coincideCategoria = categoria === "Todas" || libro.categoria === categoria;
+                return coincideTexto && coincideCategoria;
+            });
+
+            if (filtrados.length === 0) {
+                catalogoEl.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        No se encontraron libros con ese criterio.
+                    </div>`;
+                return;
+            }
+
+            catalogoEl.innerHTML = filtrados.map(libro => `
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm book-card">
+                        <div class="book-cover" style="background-color: ${libro.color};">
+                            ${libro.titulo}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge bg-secondary align-self-start mb-2">${libro.categoria}</span>
+                            <h5 class="card-title mb-1">${libro.titulo}</h5>
+                            <p class="card-text text-muted small mb-3">${libro.autor}</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="price-tag">${formatoMoneda(libro.precio)}</span>
+                                <button class="btn btn-primary btn-sm" onclick="agregarAlCarrito(${libro.id})">
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function agregarAlCarrito(idLibro) {
+            const libro = libros.find(l => l.id === idLibro);
+            if (!libro) return;
+
+            const itemExistente = carrito.find(item => item.id === idLibro);
+            if (itemExistente) {
+                itemExistente.cantidad += 1;
+            } else {
+                carrito.push({
+                    id: libro.id,
+                    titulo: libro.titulo,
+                    precio: libro.precio,
+                    cantidad: 1
+                });
+            }
+
+            guardarCarrito();
+            renderCarrito();
+        }
+
+        function cambiarCantidad(idLibro, delta) {
+            const item = carrito.find(i => i.id === idLibro);
+            if (!item) return;
+
+            item.cantidad += delta;
+            if (item.cantidad <= 0) {
+                carrito = carrito.filter(i => i.id !== idLibro);
+            }
+
+            guardarCarrito();
+            renderCarrito();
+        }
+
+        function eliminarDelCarrito(idLibro) {
+            carrito = carrito.filter(i => i.id !== idLibro);
+            guardarCarrito();
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const totalUnidades = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+            const subtotal = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+
+            contadorCarritoEl.textContent = totalUnidades;
+            subtotalEl.textContent = formatoMoneda(subtotal);
+            ivaEl.textContent = formatoMoneda(iva);
+            totalEl.textContent = formatoMoneda(total);
+            totalPagoModalEl.textContent = formatoMoneda(total);
+            btnProcederPago.disabled = carrito.length === 0;
+
+            if (carrito.length === 0) {
+                itemsCarritoEl.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        Tu carrito está vacío.
+                    </div>`;
+                return;
+            }
+
+            itemsCarritoEl.innerHTML = carrito.map(item => `
+                <div class="card mb-2 border">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong class="small">${item.titulo}</strong>
+                            <button class="btn-close btn-sm"
+                                    aria-label="Eliminar"
+                                    onclick="eliminarDelCarrito(${item.id})"></button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="cambiarCantidad(${item.id}, -1)">-</button>
+                                <button type="button" class="btn btn-outline-secondary" disabled>${item.cantidad}</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="cambiarCantidad(${item.id}, 1)">+</button>
+                            </div>
+                            <span class="fw-semibold small">${formatoMoneda(item.precio * item.cantidad)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        btnVaciarCarrito.addEventListener("click", () => {
+            carrito = [];
+            guardarCarrito();
+            renderCarrito();
+        });
+
+        // Alternar campos según método de pago
+        const metodoPagoEl = document.getElementById("metodoPago");
+        const camposTarjetaEl = document.getElementById("camposTarjeta");
+        const instruccionAltEl = document.getElementById("instruccionAlternativa");
+
+        metodoPagoEl.addEventListener("change", () => {
+            const esTarjeta = metodoPagoEl.value === "tarjeta";
+            camposTarjetaEl.classList.toggle("d-none", !esTarjeta);
+            instruccionAltEl.classList.toggle("d-none", esTarjeta);
+        });
+
+        // Procesar pago simulado
+        const formPagoEl = document.getElementById("formPago");
+        formPagoEl.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            if (carrito.length === 0) return;
+
+            if (metodoPagoEl.value === "tarjeta") {
+                const tarjetaLimpia = document.getElementById("numeroTarjeta").value.replace(/\s+/g, "");
+                const cvv = document.getElementById("cvvTarjeta").value.trim();
+                if (tarjetaLimpia.length < 13 || cvv.length < 3) {
+                    alert("Ingresa un número de tarjeta y CVV válidos.");
+                    return;
+                }
+            }
+
+            const subtotal = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+            const totalPagado = subtotal * 1.16;
+            const folio = "LIB-" + Math.floor(100000 + Math.random() * 900000);
+
+            document.getElementById("folioOrden").textContent = folio;
+            document.getElementById("montoPagado").textContent = formatoMoneda(totalPagado);
+
+            carrito = [];
+            guardarCarrito();
+            renderCarrito();
+            formPagoEl.reset();
+            camposTarjetaEl.classList.remove("d-none");
+            instruccionAltEl.classList.add("d-none");
+
+            const pagoModalInstance = bootstrap.Modal.getInstance(document.getElementById("pagoModal"));
+            pagoModalInstance.hide();
+
+            const confirmacionInstance = new bootstrap.Modal(document.getElementById("confirmacionModal"));
+            confirmacionInstance.show();
+        });
+
+        buscadorEl.addEventListener("input", renderCatalogo);
+        filtroCategoriaEl.addEventListener("change", renderCatalogo);
+
+        renderCatalogo();
+        renderCarrito();
+    </script>
+</body>
+</html>
